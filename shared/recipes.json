@@ -1,0 +1,21 @@
+{
+  "Burgers": {
+    "Buns": 1,
+    "Patty_kg": 0.18,
+    "Cheese_Slices": 1,
+    "Lettuce_g": 20,
+    "Tomato_g": 25,
+    "Sauce_ml": 15
+  },
+  "Pizzas": {
+    "Dough_Base": 1,
+    "Cheese_kg": 0.15,
+    "Tomato_Sauce_ml": 120,
+    "Toppings_kg": 0.08
+  },
+  "Salads": {
+    "Greens_kg": 0.12,
+    "Veg_Mix_kg": 0.08,
+    "Dressing_ml": 20
+  }
+}
