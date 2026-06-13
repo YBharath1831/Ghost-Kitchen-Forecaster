@@ -57,5 +57,5 @@ export function buildLocalIngredientPrep(predictions: Record<string, number>): I
 }
 
 export function buildLocalScenarioLabel(scenario: ScenarioState) {
-  return `${scenario.weather_condition} / ${scenario.local_event ? "event" : "no event"}`;
+  return `${scenario.weather_condition} / ${scenario.event ? "event" : "no event"}`;
 }

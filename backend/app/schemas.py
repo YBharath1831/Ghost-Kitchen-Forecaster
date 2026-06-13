@@ -12,7 +12,7 @@ class PredictionRequest(BaseModel):
     date: date
     temperature: float = Field(..., ge=-20, le=60)
     weather_condition: Literal["Sunny", "Cloudy", "Rainy", "Stormy"]
-    local_event: bool
+    event: Literal["No Event", "Sports Game", "Concert"]
 
 
 class IngredientPrepItem(BaseModel):

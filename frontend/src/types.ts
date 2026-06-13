@@ -1,10 +1,11 @@
 export type WeatherCondition = "Sunny" | "Cloudy" | "Rainy" | "Stormy";
+export type EventType = "No Event" | "Sports Game" | "Concert";
 
 export interface ScenarioState {
   date: string;
   temperature: number;
   weather_condition: WeatherCondition;
-  local_event: boolean;
+  event: EventType;
 }
 
 export interface IngredientPrepItem {
