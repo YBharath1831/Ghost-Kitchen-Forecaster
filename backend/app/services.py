@@ -19,6 +19,12 @@ def build_feature_frame(scenario: Dict[str, Any]) -> pd.DataFrame:
     if isinstance(scenario_date, str):
         scenario_date = date.fromisoformat(scenario_date)
 
+    event_val = scenario.get("event", "No Event")
+    if isinstance(event_val, str):
+        local_event = int(event_val != "No Event")
+    else:
+        local_event = int(bool(event_val))
+
     return pd.DataFrame(
         [
             {
@@ -26,7 +32,7 @@ def build_feature_frame(scenario: Dict[str, Any]) -> pd.DataFrame:
                 "is_weekend": int(scenario_date.weekday() >= 4),
                 "temperature": float(scenario["temperature"]),
                 "weather_condition": scenario["weather_condition"],
-                "local_event": int(bool(scenario["local_event"])),
+                "local_event": local_event,
             }
         ]
     )
@@ -49,6 +55,11 @@ class ForecastService:
             return None
         return joblib.load(self.model_bundle_file)
 
+    def get_metrics(self) -> Optional[Dict[str, Any]]:
+        if self._bundle and "metrics" in self._bundle:
+            return self._bundle["metrics"]
+        return None
+
     def predict(self, scenario: Dict[str, Any]) -> Tuple[str, Dict[str, int]]:
         feature_frame = build_feature_frame(scenario)
 
@@ -69,7 +80,12 @@ class ForecastService:
         is_weekend = scenario_date.weekday() >= 4
         weather = scenario["weather_condition"]
         temp = float(scenario["temperature"])
-        event = bool(scenario["local_event"])
+
+        event_val = scenario.get("event", "No Event")
+        if isinstance(event_val, str):
+            event = event_val != "No Event"
+        else:
+            event = bool(event_val)
 
         burger = 52 + (16 if is_weekend else 0) + (28 if event else 0) + (8 if weather in {"Rainy", "Stormy"} else 0)
         pizza = 41 + (24 if is_weekend else 0) + (34 if event else 0) + (20 if weather == "Stormy" else 6 if weather == "Rainy" else 0)

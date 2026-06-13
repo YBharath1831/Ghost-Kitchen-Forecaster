@@ -21,3 +21,15 @@ export interface ForecastResponse {
   ingredient_prep: IngredientPrepItem[];
   scenario: ScenarioState;
 }
+
+export interface ModelMetrics {
+  source: string;
+  metrics: Record<string, number> | null;
+}
+
+export interface HistoricalSalesEntry {
+  date: string;
+  Burgers: number;
+  Pizzas: number;
+  Salads: number;
+}
