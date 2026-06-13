@@ -8,6 +8,10 @@ import DemandChart from "./components/DemandChart";
 import PrepList from "./components/PrepList";
 import ScenarioSimulator from "./components/ScenarioSimulator";
 import ModelStatus from "./components/ModelStatus";
+import CustomDataPage from "./components/CustomDataPage";
+import AIConfigModal from "./components/AIConfigModal";
+
+type Page = "dashboard" | "custom-data";
 
 function formatChartDate(dateStr: string) {
   try {
@@ -20,6 +24,9 @@ function formatChartDate(dateStr: string) {
 }
 
 export default function App() {
+  const [page, setPage] = useState<Page>("dashboard");
+  const [showConfigModal, setShowConfigModal] = useState(false);
+
   const [scenario, setScenario] = useState<ScenarioState>({
     date: new Date().toISOString().slice(0, 10),
     temperature: 24,
@@ -33,13 +40,11 @@ export default function App() {
 
   const localPredictions = useMemo(() => buildLocalForecast(scenario), [scenario]);
 
-  useEffect(() => {
-    // Fetch metrics
+  const refreshMetrics = () => {
     axios.get<ModelMetrics>("http://localhost:8000/api/metrics")
       .then(({ data }) => setModelMetrics(data))
       .catch(() => setModelMetrics({ source: "frontend-fallback", metrics: null }));
 
-    // Fetch historical data
     axios.get<HistoricalSalesEntry[]>("http://localhost:8000/api/historical")
       .then(({ data }) => setHistoricalSales(data))
       .catch(() => {
@@ -53,9 +58,21 @@ export default function App() {
           { date: "2026-06-12", Burgers: 40, Pizzas: 40, Salads: 47 },
         ]);
       });
-  }, []);
+  };
 
   useEffect(() => {
+    refreshMetrics();
+  }, []);
+
+  // Re-fetch metrics when returning to dashboard from custom page
+  const handleBackToDashboard = () => {
+    setPage("dashboard");
+    setResponse(null); // force re-prediction with new model
+    refreshMetrics();
+  };
+
+  useEffect(() => {
+    if (page !== "dashboard") return;
     const controller = new AbortController();
 
     async function fetchPrediction() {
@@ -80,34 +97,31 @@ export default function App() {
     }
 
     fetchPrediction();
-
     return () => controller.abort();
-  }, [scenario]);
+  }, [scenario, page]);
 
   const forecast = response?.predictions ?? localPredictions;
   const ingredientRows = response?.ingredient_prep ?? [];
 
   const chartData = useMemo(() => {
-    const historicalEntries = historicalSales.map(entry => ({
-      label: formatChartDate(entry.date),
-      Burgers: entry.Burgers,
-      Pizzas: entry.Pizzas,
-      Salads: entry.Salads,
-      isForecast: false,
-    }));
+    const historicalEntries = historicalSales.map(entry => {
+      const { date, ...rest } = entry;
+      return {
+        label: formatChartDate(date),
+        ...rest,
+        isForecast: false,
+      };
+    });
 
     const tomorrowEntry = {
       label: 'Tomorrow',
-      Burgers: forecast.Burgers ?? 0,
-      Pizzas: forecast.Pizzas ?? 0,
-      Salads: forecast.Salads ?? 0,
+      ...forecast,
       isForecast: true,
     };
 
     return [...historicalEntries, tomorrowEntry];
   }, [historicalSales, forecast]);
 
-  // Sync forecast source to metrics component for consistency if predict returns fallback
   const activeMetrics = useMemo(() => {
     if (response?.model_source) {
       return {
@@ -118,11 +132,24 @@ export default function App() {
     return modelMetrics;
   }, [response, modelMetrics]);
 
+  if (page === "custom-data") {
+    return (
+      <div className="app-shell">
+        <CustomDataPage onBack={handleBackToDashboard} />
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
       <main className="dashboard-grid">
         <section className="hero-card">
-          <Hero isLoading={isLoading} modelSource={response?.model_source ?? modelMetrics?.source} />
+          <Hero
+            isLoading={isLoading}
+            modelSource={response?.model_source ?? modelMetrics?.source}
+            onCustomise={() => setPage("custom-data")}
+            onConfigureAI={() => setShowConfigModal(true)}
+          />
           <DemandChart data={chartData} />
         </section>
 
@@ -136,6 +163,17 @@ export default function App() {
 
         <PrepList ingredientRows={ingredientRows} />
       </main>
+
+      {/* AI Config Modal */}
+      {showConfigModal && (
+        <AIConfigModal
+          onClose={() => setShowConfigModal(false)}
+          onSaved={() => {
+            // Force re-prediction after settings change
+            setResponse(null);
+          }}
+        />
+      )}
     </div>
   );
 }

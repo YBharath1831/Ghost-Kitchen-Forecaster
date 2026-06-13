@@ -1,0 +1,13 @@
+{
+  "Tacos": {
+    "Taco_Shell": 1,
+    "Beef_g": 80,
+    "Lettuce_g": 10
+  },
+  "Burritos": {
+    "Tortilla": 1,
+    "Beef_g": 120,
+    "Rice_g": 50,
+    "Beans_g": 40
+  }
+}

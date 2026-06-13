@@ -21,7 +21,6 @@ DATA_FILE = BASE_DIR / "data" / "historical_sales.csv"
 MODEL_FILE = BASE_DIR / "ml" / "artifacts" / "model_bundle.joblib"
 
 FEATURE_COLUMNS = ["day_of_week", "is_weekend", "temperature", "weather_condition", "local_event"]
-TARGET_COLUMNS = ["Burgers", "Pizzas", "Salads"]
 
 
 def load_training_data() -> pd.DataFrame:
@@ -79,10 +78,12 @@ def train_and_evaluate() -> dict[str, object]:
     train_frame = frame.iloc[:split_index]
     test_frame = frame.iloc[split_index:]
 
+    target_columns = [col for col in frame.columns if col not in FEATURE_COLUMNS and col != "date"]
+
     models = {}
     metrics: dict[str, float] = {}
 
-    for target_column in TARGET_COLUMNS:
+    for target_column in target_columns:
         pipeline = build_pipeline()
         pipeline.fit(train_frame[FEATURE_COLUMNS], train_frame[target_column])
         predictions = pipeline.predict(test_frame[FEATURE_COLUMNS])
@@ -94,7 +95,7 @@ def train_and_evaluate() -> dict[str, object]:
     artifact = {
         "models": models,
         "feature_columns": FEATURE_COLUMNS,
-        "target_columns": TARGET_COLUMNS,
+        "target_columns": target_columns,
         "metrics": metrics,
     }
     joblib.dump(artifact, MODEL_FILE)

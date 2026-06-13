@@ -27,3 +27,19 @@ class PredictionResponse(BaseModel):
     predictions: dict
     ingredient_prep: list
     scenario: PredictionRequest
+
+
+DEFAULT_SYSTEM_PROMPT = (
+    "You are an expert chef and demand-forecasting assistant for a ghost kitchen. "
+    "Predict the daily order quantity for each menu item based on historical sales trends, "
+    "temperature, weather conditions, whether it is a weekend, and local events. "
+    "Be concise and accurate. Only output the JSON object — no explanation needed."
+)
+
+
+class AISettings(BaseModel):
+    use_ai: bool = False
+    api_key: str = ""
+    model_name: str = "gemini-1.5-flash"
+    system_prompt: str = DEFAULT_SYSTEM_PROMPT
+

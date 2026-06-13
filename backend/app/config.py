@@ -9,4 +9,6 @@ ARTIFACTS_DIR = ML_DIR / "artifacts"
 RECIPE_FILE = SHARED_DIR / "recipes.json"
 TRAINING_DATA_FILE = DATA_DIR / "historical_sales.csv"
 MODEL_BUNDLE_FILE = ARTIFACTS_DIR / "model_bundle.joblib"
+SETTINGS_FILE = SHARED_DIR / "settings.json"
+
  

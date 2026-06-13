@@ -29,7 +29,5 @@ export interface ModelMetrics {
 
 export interface HistoricalSalesEntry {
   date: string;
-  Burgers: number;
-  Pizzas: number;
-  Salads: number;
+  [key: string]: string | number;
 }

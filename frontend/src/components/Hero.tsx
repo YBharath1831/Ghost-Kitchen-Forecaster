@@ -1,12 +1,16 @@
-
 import React from 'react';
 
 interface HeroProps {
   isLoading: boolean;
   modelSource: string | undefined;
+  onCustomise: () => void;
+  onConfigureAI: () => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ isLoading, modelSource }) => {
+const Hero: React.FC<HeroProps> = ({ isLoading, modelSource, onCustomise, onConfigureAI }) => {
+  const isAI = modelSource === 'ai-gemini';
+  const isTrained = modelSource === 'trained-model';
+
   return (
     <div className="hero-copy">
       <p className="eyebrow">Ghost Kitchen Forecaster</p>
@@ -18,12 +22,25 @@ const Hero: React.FC<HeroProps> = ({ isLoading, modelSource }) => {
       <div className="status-row">
         <span
           className={`status-pill ${
-            modelSource === 'trained-model' ? 'success' : 'muted'
+            isAI ? 'ai' : isTrained ? 'success' : 'muted'
           }`}
         >
-          {isLoading ? 'Updating forecast' : modelSource ?? 'offline-baseline'}
+          {isLoading
+            ? 'Updating forecast…'
+            : isAI
+            ? '🤖 AI · Gemini'
+            : modelSource ?? 'offline-baseline'}
         </span>
         <span className="status-pill subtle">No login required</span>
+      </div>
+      {/* Both action buttons sit here, above the chart section */}
+      <div className="hero-action-row">
+        <button className="customise-button" onClick={onCustomise}>
+          🍳 Customise My Kitchen
+        </button>
+        <button className="customise-button configure-ai-btn" onClick={onConfigureAI}>
+          ⚙️ Configure AI
+        </button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -13,20 +13,32 @@ import {
 
 interface ChartDataEntry {
   label: string;
-  Burgers: number;
-  Pizzas: number;
-  Salads: number;
   isForecast?: boolean;
+  [key: string]: string | number | boolean | undefined;
 }
 
 interface DemandChartProps {
   data: ChartDataEntry[];
 }
 
-const itemColors = {
+const itemColors: Record<string, string> = {
   Burgers: '#60a5fa', // sleek blue
   Pizzas: '#f97316',  // vibrant orange
   Salads: '#14b8a6',  // teal
+};
+
+const fallbackColors = [
+  '#ec4899', // pink
+  '#8b5cf6', // purple
+  '#facc15', // yellow
+  '#a3e635', // lime
+  '#f43f5e', // rose
+  '#3b82f6', // blue
+  '#10b981', // emerald
+];
+
+const getColorForIndex = (index: number) => {
+  return fallbackColors[index % fallbackColors.length];
 };
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -58,6 +70,12 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 const DemandChart: React.FC<DemandChartProps> = ({ data }) => {
+  const dataKeys = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    const keys = Object.keys(data[0]).filter(k => k !== 'label' && k !== 'isForecast');
+    return keys;
+  }, [data]);
+
   return (
     <div className="chart-card">
       <div className="card-header">
@@ -86,36 +104,24 @@ const DemandChart: React.FC<DemandChartProps> = ({ data }) => {
             formatter={(value: string) => <span style={{ color: 'rgba(232, 239, 255, 0.8)' }}>{value}</span>}
           />
           
-          <Bar dataKey="Burgers" stackId="a" fill={itemColors.Burgers}>
-            {data.map((entry, index) => (
-              <Cell 
-                key={`burgers-cell-${index}`} 
-                opacity={entry.isForecast ? 1.0 : 0.45}
-                stroke={entry.isForecast ? '#ffffff' : 'none'}
-                strokeWidth={entry.isForecast ? 1.5 : 0}
-              />
-            ))}
-          </Bar>
-          <Bar dataKey="Pizzas" stackId="a" fill={itemColors.Pizzas}>
-            {data.map((entry, index) => (
-              <Cell 
-                key={`pizzas-cell-${index}`} 
-                opacity={entry.isForecast ? 1.0 : 0.45}
-                stroke={entry.isForecast ? '#ffffff' : 'none'}
-                strokeWidth={entry.isForecast ? 1.5 : 0}
-              />
-            ))}
-          </Bar>
-          <Bar dataKey="Salads" stackId="a" fill={itemColors.Salads}>
-            {data.map((entry, index) => (
-              <Cell 
-                key={`salads-cell-${index}`} 
-                opacity={entry.isForecast ? 1.0 : 0.45}
-                stroke={entry.isForecast ? '#ffffff' : 'none'}
-                strokeWidth={entry.isForecast ? 1.5 : 0}
-              />
-            ))}
-          </Bar>
+          {dataKeys.map((key, i) => (
+            <Bar 
+              key={key} 
+              dataKey={key} 
+              stackId="a" 
+              fill={itemColors[key] || getColorForIndex(i)}
+            >
+              {data.map((entry, index) => (
+                <Cell 
+                  key={`${key}-cell-${index}`} 
+                  opacity={entry.isForecast ? 1.0 : 0.45}
+                  stroke={entry.isForecast ? '#ffffff' : 'none'}
+                  strokeWidth={entry.isForecast ? 1.5 : 0}
+                />
+              ))}
+            </Bar>
+          ))}
+          
         </BarChart>
       </ResponsiveContainer>
     </div>
